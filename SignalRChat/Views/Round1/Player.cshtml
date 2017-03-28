@@ -1,0 +1,89 @@
+﻿
+@{
+    ViewBag.Title = "Player";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<h1>Round 1</h1>
+<h2>Player @ViewBag.PlayerName</h2>
+
+<p id="ques">Câu 1 : </p>
+<input type="text" id="ans" />
+<input type="button" id="ansBt" />
+
+@for (int i = 0; i < 3; i++)
+{
+    List<OlympiaApp.Models.Vong1> list = ViewData["listQues"] as List<OlympiaApp.Models.Vong1>;
+    <input type="hidden" class="lq" value="@list[i].CauHoi" />
+}
+
+
+
+@section scripts {
+    <script src="~/Scripts/jquery.signalR-2.2.1.min.js"></script>
+    <script src="~/signalr/hubs"></script>
+    <script>
+        $(document).ready(function () {
+            var question = document.querySelectorAll('.lq');
+            for (var i = 0; i < 3; i++) {
+                question[i].id = 'lq' + i;
+            }
+
+            var ques = document.getElementById('ques');
+            ques.innerHTML = document.getElementById('lq0').innerHTML;
+        });
+
+        $(function () {
+            var chat = $.connection.chatHub;
+            chat.client.addNewMessageToPage = function (name, message) {
+                if (message.includes("ADStart") && message.includes('@ViewBag.UserID')) {
+                    window.location.href = "/Round1/Player?id="+'@ViewBag.UserID';
+                }
+            };
+            $('#displayname').val('@ViewBag.UserID');
+            $.connection.hub.start().done(function () {
+                chat.server.send($('#displayname').val(), 'NewLogin:@ViewBag.UserID:@ViewBag.UserName');
+            });
+        });
+        function htmlEncode(value) {
+            var encodedValue = $('<div />').text(value).html();
+            return encodedValue;
+        }
+    </script>
+}
+
+
+
+@*<style>
+    #myProgress {
+        width: 100%;
+        background-color: #4CAF50;
+    }
+
+    #myBar {
+        width: 1%;
+        height: 30px;
+        background-color: #ddd;
+    }
+</style>
+
+<div id="myProgress">
+    <div id="myBar" />
+</div>
+
+<button onclick="move()">abc</button>
+
+<script>
+    function move() {
+        var elem = document.getElementById("myBar");
+        var width = 1;
+        var id = setInterval(frame, 200);
+        function frame() {
+            if (width >= 100) {
+                clearInterval(id);
+            } else {
+                width++;
+                elem.style.width = width + '%';
+            }
+        }
+    }
+</script>*@
