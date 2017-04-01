@@ -1,0 +1,93 @@
+﻿
+@{
+    ViewBag.Title = "PlayerR1";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<h1>Round 1</h1>
+<h2>Player @ViewBag.PlayerName</h2>
+
+<p id="ques">Câu 1 : </p>
+<input type="text" id="ans" />
+<input type="button" id="ansBt" value="Send" />
+<br />
+<input type="hidden" id="quesNum" value="0" />
+<br />
+@for (int i = 0; i < 3; i++)
+{
+    List<Olympia.Models.Vong1> list = ViewData["listQues"] as List<Olympia.Models.Vong1>;
+    <input type="hidden" class="lq" value="@list[i].CauHoi" />
+}
+
+
+@section scripts {
+    <script src="~/Scripts/jquery.signalR-2.2.1.min.js"></script>
+    <script src="~/signalr/hubs"></script>
+    <script>
+        var ques = document.getElementById('ques');
+        var quesNum = document.getElementById('quesNum').value;
+        var ans = document.getElementById('ans').value;
+        $(document).ready(function () {
+            var question = document.querySelectorAll('.lq');
+            for (var i = 0; i < 3; i++) {
+                question[i].id = i;
+            }
+            ques.innerHTML = document.getElementById('0').value;
+        });
+
+        $(function () {
+            var chat = $.connection.chatHub;
+            chat.client.addNewMessageToPage = function (name, message) {
+
+            };
+            $.connection.hub.start().done(function () {
+                $('#ansBt').click(function () {
+                    chat.server.send('@ViewBag.PlayerID', quesNum + ':' + document.getElementById('ans').value);
+                    quesNum = parseInt(quesNum) + 1;
+                    ques.innerHTML = document.getElementById(quesNum).value;
+                    document.getElementById('ans').value = '';
+                });
+            });
+        });
+        function htmlEncode(value) {
+            var encodedValue = $('<div />').text(value).html();
+            return encodedValue;
+        }
+    </script>
+}
+
+
+
+@*<style>
+        #myProgress {
+            width: 100%;
+            background-color: #4CAF50;
+        }
+
+        #myBar {
+            width: 1%;
+            height: 30px;
+            background-color: #ddd;
+        }
+    </style>
+
+    <div id="myProgress">
+        <div id="myBar" />
+    </div>
+
+    <button onclick="move()">abc</button>
+
+    <script>
+        function move() {
+            var elem = document.getElementById("myBar");
+            var width = 1;
+            var id = setInterval(frame, 200);
+            function frame() {
+                if (width >= 100) {
+                    clearInterval(id);
+                } else {
+                    width++;
+                    elem.style.width = width + '%';
+                }
+            }
+        }
+    </script>*@

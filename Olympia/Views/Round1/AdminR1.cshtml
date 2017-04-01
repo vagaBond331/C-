@@ -1,0 +1,191 @@
+﻿@model Olympia.Models.Vong1
+@{
+    ViewBag.Title = "AdminR1";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<h1>Round 1</h1>
+<input type="hidden" id="STT" />
+<input type="hidden" id="PLplaying" />
+<ul>
+    @if (@ViewBag.num >= 1)
+    {
+        <li>
+            <span>Player 1 : @Session["P1Name"] : <span id="pointP1">0</span></span>
+            <input type="button" id="start1" value="Bắt đầu" />
+        </li>}
+    @if (@ViewBag.num >= 2)
+    {
+        <li>
+            <span>Player 2 : @Session["P2Name"] : <span id="pointP2">0</span></span>    
+            <input type="button" id="start2" value="Bắt đầu" />
+        </li>}
+    @if (@ViewBag.num >= 3)
+    {
+        <li>
+            <span>Player 3 : @Session["P3Name"] : <span id="pointP3">0</span></span>
+            <input type="button" id="start3" value="Bắt đầu" />
+        </li>}
+    @if (@ViewBag.num >= 4)
+    {
+        <li>
+            <span>Player 4 : @Session["P4Name"] : <span id="pointP4">0</span></span>
+            <input type="button" id="start4" value="Bắt đầu" />
+        </li>}
+</ul>
+
+<div>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Câu hỏi</th>
+                <th>Đáp án</th>
+                <th>TS trả lời</th>
+                <th>Đúng</th>
+                <th>Sai</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < 3; i++)
+            {
+                List<Olympia.Models.Vong1> list = ViewData["listQues"] as List<Olympia.Models.Vong1>;
+                <tr>
+                    <td>Câu @(i + 1)</td>
+                    <td class="ques"></td>
+                    <td class="ans"></td>
+                    <td class="sans"></td>
+                    <td><input type="button" value="T" class="btT" onclick="ansTrue(this.id)" /></td>
+                    <td><input type="button" value="F" class="btF" onclick="ansTrue(this.id)" /></td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td>Tổng</td>
+                <td id="sum">0</td>
+                <td colspan="2"></td>
+                <td colspan="2"><input type="button" id="doneBt" value="Kết thúc" /></td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<input type="button" value="Kết thúc vòng 1" id="endBt" />
+@{ 
+    List<Olympia.Models.Vong1> list2 = ViewData["listQues"] as List<Olympia.Models.Vong1>;
+    for (int i = 0; i < list2.Count(); i++)
+    {
+        <input type="hidden" class="hiddenQues" value="@list2[i].CauHoi"/>
+        <input type="hidden" class="hiddenAns" value="@list2[i].DapAn" />
+    }
+}
+
+
+@section scripts {
+    <script src="~/Scripts/jquery.signalR-2.2.1.min.js"></script>
+    <script src="~/signalr/hubs"></script>
+    <script>
+        var btT = document.getElementsByClassName('btT');
+        var btF = document.getElementsByClassName('btF');
+        var PLplaying = document.getElementById('PLplaying');
+        var stt = document.getElementById('STT');
+        var sum = document.getElementById('sum');
+        var ques = document.querySelectorAll('.ques');
+        var ans = document.querySelectorAll('.ans');
+        var sans = document.querySelectorAll('.sans');
+        var hQues = document.querySelectorAll('.hiddenQues');
+        var hAns = document.querySelectorAll('.hiddenAns');
+        $(document).ready(function () {
+            for (var i = 0; i < 3; i++) {
+                ques[i].id = 'Q' + i;
+                ans[i].id = i;
+                sans[i].id = 'A' + i;
+                btT[i].id = 'T' + i;
+                btF[i].id = 'F' + i;
+            }
+        });
+
+        function setQues() {
+            for (var i = 0; i < 3; i++) {
+                var c = parseInt(stt.value);
+                ques[i].innerHTML = hQues[3 * (c - 1) + i].value;
+                btT[i].disabled = false;
+                btF[i].disabled = false;
+                ans[i].innerHTML = '';
+                sum.innerHTML = 0;
+            }
+        }
+
+        function ansTrue(id) {
+            var thisBt = document.getElementById(id);
+            if (id.substring(0, 1) == 'T') var otherBt = document.getElementById('F' + id.substring(1, 3));
+            else var otherBt = document.getElementById('T' + id.substring(1, 3));
+            if (id.substring(0, 1) == 'T') {
+                thisBt.disabled = true;
+                otherBt.disabled = false;
+                sum.innerHTML = parseInt(sum.innerHTML) + 10;
+            } else {
+                if (otherBt.disabled == true) {
+                    otherBt.disabled = false;
+                    thisBt.disabled = true;
+                    sum.innerHTML = parseInt(sum.innerHTML) - 10;
+                } else {
+                    thisBt.disabled = true;
+                }
+            }
+        }
+
+        $('#doneBt').click(function () {
+            document.getElementById('pointP' + stt.value).innerHTML = sum.innerHTML;
+        });
+
+        $('#endBt').click(function () {
+            var point = '';
+            for (var i = 1; i < 5; i++) {
+                point += document.getElementById('pointP' + stt.value).innerHTML;
+            }
+            window.location.href = "/Round2/AdminR2?point=" + point;
+        });
+        
+        $(function () {
+            var chat = $.connection.chatHub;
+            chat.client.addNewMessageToPage = function (name, message) {
+                if (name == document.getElementById('PLplaying').value) {
+                    var mess = message.split(":");
+                    document.getElementById(mess[0]).innerHTML = mess[1];
+                }
+            };
+            $.connection.hub.start().done(function () {
+                $('#start1').click(function () {
+                    chat.server.send($('#displayname').val(), 'Start:@Session["P1ID"]:@ViewBag.Ques1');
+                    document.getElementById('PLplaying').value = '@Session["P1ID"]';
+                    document.getElementById('STT').value = 1;
+                    setQues();
+                });
+                $('#start2').click(function () {
+                    chat.server.send($('#displayname').val(), 'Start:@Session["P2ID"]:@ViewBag.Ques2');
+                    document.getElementById('PLplaying').value = '@Session["P2ID"]';
+                    document.getElementById('STT').value = 2;
+                    setQues();
+                });
+                $('#start3').click(function () {
+                    chat.server.send($('#displayname').val(), 'Start:@Session["P3ID"]:@ViewBag.Ques3');
+                    document.getElementById('PLplaying').value = '@Session["P3ID"]';
+                    document.getElementById('STT').value = 3;
+                    setQues();
+                });
+                $('#start4').click(function () {
+                    chat.server.send($('#displayname').val(), 'Start:@Session["P4ID"]:@ViewBag.Ques4');
+                    document.getElementById('PLplaying').value = '@Session["P4ID"]';
+                    document.getElementById('STT').value = 4;
+                    setQues();
+                });
+            });
+        });
+
+        function htmlEncode(value) {
+            var encodedValue = $('<div />').text(value).html();
+            return encodedValue;
+        }
+    </script>
+}
