@@ -170,6 +170,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Olympia.edmx</DependentUpon>
     </Compile>
+    <Compile Include="Models\Round1Model.cs" />
+    <Compile Include="Models\Round2Model.cs" />
     <Compile Include="Models\UserModel.cs" />
     <Compile Include="Models\Vong1.cs">
       <DependentUpon>Olympia.tt</DependentUpon>

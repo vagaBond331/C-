@@ -1,4 +1,4 @@
-﻿@model Olympia.Models.Vong1
+﻿@model Olympia.Models.Round1Model
 @{
     ViewBag.Title = "AdminR1";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -7,32 +7,31 @@
 <input type="hidden" id="STT" />
 <input type="hidden" id="PLplaying" />
 <ul>
-    @if (@ViewBag.num >= 1)
+    @if (Model.players.num >= 1)
     {
         <li>
-            <span>Player 1 : @Session["P1Name"] : <span id="pointP1">0</span></span>
+            <span>Player 1 : @Model.players.Player1.name : <span id="pointP1">0</span></span>
             <input type="button" id="start1" value="Bắt đầu" />
         </li>}
-    @if (@ViewBag.num >= 2)
+    @if (Model.players.num >= 2)
     {
         <li>
-            <span>Player 2 : @Session["P2Name"] : <span id="pointP2">0</span></span>    
+            <span>Player 2 : @Model.players.Player2.name : <span id="pointP2">0</span></span>
             <input type="button" id="start2" value="Bắt đầu" />
         </li>}
-    @if (@ViewBag.num >= 3)
+    @if (Model.players.num >= 3)
     {
         <li>
-            <span>Player 3 : @Session["P3Name"] : <span id="pointP3">0</span></span>
+            <span>Player 3 : @Model.players.Player3.name : <span id="pointP3">0</span></span>
             <input type="button" id="start3" value="Bắt đầu" />
         </li>}
-    @if (@ViewBag.num >= 4)
+    @if (Model.players.num >= 4)
     {
         <li>
-            <span>Player 4 : @Session["P4Name"] : <span id="pointP4">0</span></span>
+            <span>Player 4 : @Model.players.Player4.name : <span id="pointP4">0</span></span>
             <input type="button" id="start4" value="Bắt đầu" />
         </li>}
 </ul>
-
 <div>
     <table class="table table-striped">
         <thead>
@@ -48,7 +47,6 @@
         <tbody>
             @for (int i = 0; i < 3; i++)
             {
-                List<Olympia.Models.Vong1> list = ViewData["listQues"] as List<Olympia.Models.Vong1>;
                 <tr>
                     <td>Câu @(i + 1)</td>
                     <td class="ques"></td>
@@ -71,12 +69,11 @@
 </div>
 
 <input type="button" value="Kết thúc vòng 1" id="endBt" />
-@{ 
-    List<Olympia.Models.Vong1> list2 = ViewData["listQues"] as List<Olympia.Models.Vong1>;
-    for (int i = 0; i < list2.Count(); i++)
+@{
+    for (int i = 0; i < Model.listQues.Count(); i++)
     {
-        <input type="hidden" class="hiddenQues" value="@list2[i].CauHoi"/>
-        <input type="hidden" class="hiddenAns" value="@list2[i].DapAn" />
+        <input type="hidden" class="hiddenQues" value="@Model.listQues[i].CauHoi" />
+        <input type="hidden" class="hiddenAns" value="@Model.listQues[i].DapAn" />
     }
 }
 
@@ -142,11 +139,13 @@
         $('#endBt').click(function () {
             var point = '';
             for (var i = 1; i < 5; i++) {
-                point += document.getElementById('pointP' + stt.value).innerHTML;
+                var p = document.getElementById('pointP' + i);
+                if (p != null)
+                    point += p.innerHTML + ':';
             }
             window.location.href = "/Round2/AdminR2?point=" + point;
         });
-        
+
         $(function () {
             var chat = $.connection.chatHub;
             chat.client.addNewMessageToPage = function (name, message) {
@@ -157,26 +156,26 @@
             };
             $.connection.hub.start().done(function () {
                 $('#start1').click(function () {
-                    chat.server.send($('#displayname').val(), 'Start:@Session["P1ID"]:@ViewBag.Ques1');
-                    document.getElementById('PLplaying').value = '@Session["P1ID"]';
+                    chat.server.send($('#displayname').val(), 'Start:@Model.players.Player1.id:@ViewBag.Ques1');
+                    document.getElementById('PLplaying').value = '@Model.players.Player1.id';
                     document.getElementById('STT').value = 1;
                     setQues();
                 });
                 $('#start2').click(function () {
-                    chat.server.send($('#displayname').val(), 'Start:@Session["P2ID"]:@ViewBag.Ques2');
-                    document.getElementById('PLplaying').value = '@Session["P2ID"]';
+                    chat.server.send($('#displayname').val(), 'Start:@Model.players.Player2.id:@ViewBag.Ques2');
+                    document.getElementById('PLplaying').value = '@Model.players.Player2.id';
                     document.getElementById('STT').value = 2;
                     setQues();
                 });
                 $('#start3').click(function () {
-                    chat.server.send($('#displayname').val(), 'Start:@Session["P3ID"]:@ViewBag.Ques3');
-                    document.getElementById('PLplaying').value = '@Session["P3ID"]';
+                    chat.server.send($('#displayname').val(), 'Start:@Model.players.Player3.id:@ViewBag.Ques3');
+                    document.getElementById('PLplaying').value = '@Model.players.Player3.id';
                     document.getElementById('STT').value = 3;
                     setQues();
                 });
                 $('#start4').click(function () {
-                    chat.server.send($('#displayname').val(), 'Start:@Session["P4ID"]:@ViewBag.Ques4');
-                    document.getElementById('PLplaying').value = '@Session["P4ID"]';
+                    chat.server.send($('#displayname').val(), 'Start:@Model.players.Player4.id:@ViewBag.Ques4');
+                    document.getElementById('PLplaying').value = '@Model.players.Player4.id';
                     document.getElementById('STT').value = 4;
                     setQues();
                 });

@@ -1,8 +1,108 @@
-﻿
+﻿@model Olympia.Models.Round2Model
 @{
     ViewBag.Title = "AdminR2";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <h2>AdminR2</h2>
+<ul>
+    @if (@ViewBag.num >= 1)
+    {
+        <li>
+            <span>Player 1 : @Session["P1Name"] : <span id="pointP1">0</span></span>
+        </li>}
+    @if (@ViewBag.num >= 2)
+    {
+        <li>
+            <span>Player 2 : @Session["P2Name"] : <span id="pointP2">0</span></span>
+        </li>}
+    @if (@ViewBag.num >= 3)
+    {
+        <li>
+            <span>Player 3 : @Session["P3Name"] : <span id="pointP3">0</span></span>
+        </li>}
+    @if (@ViewBag.num >= 4)
+    {
+        <li>
+            <span>Player 4 : @Session["P4Name"] : <span id="pointP4">0</span></span>
+        </li>}
+</ul>
+@using (Html.BeginForm("AdminR2", "Round2", FormMethod.Post))
+{
+    <span>Nhóm câu hỏi : @Html.TextBoxFor(model => model.group) </span>
+    <input type="submit" value="Bắt đầu" />
+}
+@if (Model.list.Count() > 0)
+{
+    <table border="1">
+        @for (int i = 0; i < 4; i++)
+        {
+            <tr>
+                @for (int j = 0; j < Model.list[i].DapAn.Length; j++)
+                {
+                    <td style="width:20px">@Model.list[i].DapAn.ToCharArray()[j]</td>
+                }
+                @for (int j = Model.list[i].DapAn.Length; j < 15; j++)
+                {
+                    <td style="width:20px"></td>
+                }
+            </tr>
+        }
+    </table>
+}
+@section scripts {
+    <script src="~/Scripts/jquery.signalR-2.2.1.min.js"></script>
+    <script src="~/signalr/hubs"></script>
+    <script>
+        $(document).ready(function () {
 
+        });
+
+        $('#endBt').click(function () {
+            var group = document.getElementById('quesGroup').value;
+
+            window.location.href = "/Round2/AdminR2?group=" + group;
+        });
+
+        $(function () {
+            var chat = $.connection.chatHub;
+            chat.client.addNewMessageToPage = function (name, message) {
+                if (name == document.getElementById('PLplaying').value) {
+                    var mess = message.split(":");
+                    document.getElementById(mess[0]).innerHTML = mess[1];
+                }
+            };
+            $.connection.hub.start().done(function () {
+                $('#start1').click(function () {
+                    chat.server.send($('#displayname').val(), 'Start:@Session["P1ID"]:@ViewBag.Ques1');
+                    document.getElementById('PLplaying').value = '@Session["P1ID"]';
+                    document.getElementById('STT').value = 1;
+                    setQues();
+                });
+                $('#start2').click(function () {
+                    chat.server.send($('#displayname').val(), 'Start:@Session["P2ID"]:@ViewBag.Ques2');
+                    document.getElementById('PLplaying').value = '@Session["P2ID"]';
+                    document.getElementById('STT').value = 2;
+                    setQues();
+                });
+                $('#start3').click(function () {
+                    chat.server.send($('#displayname').val(), 'Start:@Session["P3ID"]:@ViewBag.Ques3');
+                    document.getElementById('PLplaying').value = '@Session["P3ID"]';
+                    document.getElementById('STT').value = 3;
+                    setQues();
+                });
+                $('#start4').click(function () {
+                    chat.server.send($('#displayname').val(), 'Start:@Session["P4ID"]:@ViewBag.Ques4');
+                    document.getElementById('PLplaying').value = '@Session["P4ID"]';
+                    document.getElementById('STT').value = 4;
+                    setQues();
+                });
+            });
+        });
+
+        function htmlEncode(value) {
+            var encodedValue = $('<div />').text(value).html();
+            return encodedValue;
+        }
+    </script>
+}

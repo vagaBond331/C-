@@ -1,9 +1,7 @@
 ﻿using Olympia.Models;
-using Olympia.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
 
 namespace Olympia.Controllers
@@ -11,37 +9,43 @@ namespace Olympia.Controllers
     public class Round1Controller : Controller
     {
         private OlympiaEntities db = new OlympiaEntities();
-        
+        private Round1Model model = new Round1Model();
+
         public ActionResult AdminR1()
         {
             string[] player = this.Request.QueryString["joined"].ToString().Split(':');
             int num = int.Parse(player[0]);
-            Session["NumberPlayer"] = num;
-            ViewBag.num = num;
+            model.players.num = num;
+
             if (num >= 1)
             {
-                Session["P1ID"] = player[1];
-                Session["P1Name"] = db.HocSinh.Find(player[1]).Ten;
+                model.players.Player1.STT = 1;
+                model.players.Player1.id = player[1];
+                model.players.Player1.name = db.HocSinh.Find(player[1]).Ten;
             }
             if (num >= 2)
             {
-                Session["P2ID"] = player[2];
-                Session["P2Name"] = db.HocSinh.Find(player[2]).Ten;
+                model.players.Player2.STT = 2;
+                model.players.Player2.id = player[2];
+                model.players.Player2.name = db.HocSinh.Find(player[2]).Ten;
             }
             if (num >= 3)
             {
-                Session["P3ID"] = player[4];
-                Session["P3Name"] = db.HocSinh.Find(player[3]).Ten;
+                model.players.Player3.STT = 3;
+                model.players.Player3.id = player[3];
+                model.players.Player3.name = db.HocSinh.Find(player[3]).Ten;
             }
             if (num >= 4)
             {
-                Session["P4ID"] = player[4];
-                Session["P4Name"] = db.HocSinh.Find(player[4]).Ten;
+                model.players.Player4.STT = 4;
+                model.players.Player4.id = player[4];
+                model.players.Player4.name = db.HocSinh.Find(player[4]).Ten;
             }
+            model.listQues = getQuesRound1(num);
 
-            ViewData["listQues"] = getQuesRound1(num);
+            Session["players"] = model.players;
 
-            return View();
+            return View(model);
         }
 
         public ActionResult PlayerR1()
@@ -58,7 +62,7 @@ namespace Olympia.Controllers
             }
             ViewData["listQues"] = list;
 
-            return View();
+            return View(model);
         }
 
         public List<Vong1> getQuesRound1(int num)

@@ -19,7 +19,7 @@ namespace Olympia.Models
         public string CauHoi { get; set; }
         public string DapAn { get; set; }
         public Nullable<int> STT { get; set; }
-        public Nullable<int> SoHangDoc { get; set; }
+        public int SoHangDoc { get; set; }
         public string Pro1 { get; set; }
         public string Pro2 { get; set; }
         public string Pro3 { get; set; }
